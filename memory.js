@@ -1,8 +1,8 @@
-memory = {
-    _mem = new Uint8Array(0xFFFF),
+const memory = {
+    _mem : new Uint8Array(0xFFFF),
     biosInitialized: false,
 
-    initBios = () => {
+    initBios : () => {
         memory._mem = [
             0x31, 0xFE, 0xFF, 0xAF, 0x21, 0xFF, 0x9F, 0x32, 0xCB, 0x7C, 0x20, 0xFB, 0x21, 0x26, 0xFF, 0x0E,
             0x11, 0x3E, 0x80, 0x32, 0xE2, 0x0C, 0x3E, 0xF3, 0xE2, 0x32, 0x3E, 0x77, 0x77, 0x3E, 0xFC, 0xE0,
@@ -21,25 +21,29 @@ memory = {
             0x21, 0x04, 0x01, 0x11, 0xA8, 0x00, 0x1A, 0x13, 0xBE, 0x20, 0xFE, 0x23, 0x7D, 0xFE, 0x34, 0x20,
             0xF5, 0x06, 0x19, 0x78, 0x86, 0x23, 0x05, 0x20, 0xFB, 0x86, 0x20, 0xFE, 0x3E, 0x01, 0xE0, 0x50
         ];
-        memory.biosInitialized = true;
+        memory.biosInitialized = false;
     },
 
-    read8 = (addr) => {
-        if (!biosInitialized) {
-            return memory._mem[addr];
+    read8 : (addr) => {
+        if (!memory.biosInitialized) {
+            if (addr < 0x100) {
+                return memory._mem[addr];
+            } else if (cpu._registers.pc == 0x100) {
+                memory.biosInitialized = true;
+            }
         }
         return memory._mem[addr + 0x100];
     },
-    write8 = (addr, data) => {
+    write8 : (addr, data) => {
         memory._mem[addr + 0x100] = (data & 255);
     },
-    read16 = (addr) => {
+    read16 : (addr) => {
         let ret = memory.read8(addr);
         ret << 8;
         ret = ret + memory.read8(addr + 1);
         return ret;
     },
-    write16 = (addr, data) => {
+    write16 : (addr, data) => {
         let higher = data >> 8;
         let lower = (data & 255);
         memory._mem[addr + 0x100] = higher;

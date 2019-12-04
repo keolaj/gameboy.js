@@ -1,4 +1,4 @@
-cpu = {
+const cpu = {
     _clock: {
         m: 0,
         t: 0
@@ -20,65 +20,65 @@ cpu = {
     },
     _opImplementation: {
         // load from register to register
-        LDrrb_b = () => {
+        LDrrb_b : () => {
             cpu._registers.b = cpu._registers.b;
             cpu._clock.m = 1;
             cpu._clock.t = 4;
         },
-        LDrrb_c = () => {
+        LDrrb_c : () => {
             cpu._registers.b = cpu._registers.c;
             cpu._clock.m = 1;
             cpu._clock.t = 4;
         },
-        LDrrb_d = () => {
+        LDrrb_d : () => {
             cpu._registers.b = cpu._registers.d;
             cpu._clock.m = 1;
             cpu._clock.t = 4;
         },
-        LDrrb_e = () => {
+        LDrrb_e : () => {
             cpu._registers.b = cpu._registers.e;
             cpu._clock.m = 1;
             cpu._clock.t = 4;
         },
-        LDrrb_h = () => {
+        LDrrb_h : () => {
             cpu._registers.b = cpu._registers.h;
             cpu._clock.m = 1;
             cpu._clock.t = 4;
         },
-        LDrrb_l = () => {
+        LDrrb_l : () => {
             cpu._registers.b = cpu._registers.l;
             cpu._clock.m = 1;
             cpu._clock.t = 4;
         },
-        LDrrb_a = () => {
+        LDrrb_a : () => {
             cpu._registers.b = cpu._registers.a;
             cpu._clock.m = 1;
             cpu._clock.t = 4;
         },
 
-        LDrrc_b = () => {
+        LDrrc_b : () => {
             cpu._registers.c = cpu._registsers.b;
             cpu._clock.m = 1;
             cpu._clock.t = 4;
         },
-        LDrrc_c = () => {
+        LDrrc_c : () => {
             //cpu.registers.c = cpu._registers.c;
             cpu._clock.m = 1;
             cpu._clock.t = 4;
         },
-        LDrrc_d = () => {
+        LDrrc_d : () => {
             cpu.registers.c = cpu._registers.d;
             cpu._clock.m = 1;
             cpu._clock.t = 4;
         },
-        LDrrc_e = () => {
+        LDrrc_e : () => {
             cpu._registers.c = cpu._registers.e;
             cpu._clock.m = 1;
             cpu._clock.t = 4;
         },
         
         // add value from register to register A
-        ADDra_e = () => {
+        ADDra_e : () => {
             cpu._registers.a += cpu._registers.e;
             cpu._helpers.setFlags(cpu._registers.a);
             cpu._registers.a &= 255;
@@ -87,9 +87,14 @@ cpu = {
         },
 
         // no operation
-        NOP = () => {
+        NOP : () => {
             cpu._clock.m = 1;
             cpu._clock.t = 4;
+        },
+
+        // not implemented
+        notImplemented : () => {
+            console.log("not implemented");
         }
     },
     _helpers: {
@@ -111,7 +116,24 @@ cpu = {
         }
     },
     _map: [],
-    _cbmap: []
-}
+    _cbmap: [],
 
-export default cpu;
+    dispatcher : () => {
+        memory.initBios();
+        let execute = false;
+    
+        while (cpu._registers.pc < 256) {
+            cpu._map[memory.read8(cpu._registers.pc++)]();
+            cpu._registers.pc & 65535;
+            cpu._clock.m += cpu._registers.m;
+        }
+        console.log(memory.read8(cpu._registers.pc));
+    }
+}
+cpu._map = [
+    cpu._opImplementation.NOP,
+
+]
+for (let i = 0; i < 400; i++) {
+    cpu._map[i] = cpu._opImplementation.notImplemented;
+}

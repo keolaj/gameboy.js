@@ -4,11 +4,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>gameboy js</title>
-    <script src="./z80.js"></script>
+
+    <script src="./cpu.js"></script>
+    <script src="./memory.js">s</script>
+
 </head>
 <body>
 
     <canvas id="entry"></canvas>
+    <script>
+        memory.initBios();
+        cpu.dispatcher();
+    </script>
+
     
 </body>
 </html>
