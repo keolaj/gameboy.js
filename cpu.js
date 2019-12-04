@@ -210,7 +210,7 @@ const cpu = {
             if (cpu._cbmap[op]) {
                 cpu._cbmap[op]();
             } else {
-                console.log(op.toString(16));
+                console.log("cb instruction not implemented: " + op.toString(16));
             }
         }
     },
@@ -252,10 +252,12 @@ cpu._cbmap[0x7c] = cpu._opImplementation.BIT7h;
 
 document.getElementById("stepbutton").onclick = () => {
     clearInterval(cpu.cpuInterval);
-    let op = cpu._map[memory.read8(cpu._registers.pc++)];
-    console.log(memory.read8(cpu._registers.pc).toString(16));
-    console.log(memory._mem);
+    console.log("executing opcode: 0x" + memory.read8(cpu._registers.pc).toString(16));
+    let op = cpu._map[memory.read8(cpu._registers.pc)];
+    cpu._registers.pc++
     op();
+    console.log(memory._mem);
+    console.log(cpu._registers);
     cpu._registers.pc & 65535;
     cpu._clock.m += cpu._registers.m;
 }

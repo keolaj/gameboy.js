@@ -26,17 +26,23 @@ const memory = {
     read8 : (addr) => {
         if (!memory.biosInitialized) {
             if (addr < 0x100) {
-                console.log("writing to " + addr);
+                console.log("reading from " + addr);
                 return memory._mem[addr];
             } else if (cpu._registers.pc == 0x100) {
                 memory.biosInitialized = true;
             }
         }
-        console.log("writting to " + (addr + 0x100));
+        console.log("reading from " + (addr + 0x100));
         return memory._mem[addr + 0x100];
     },
     write8 : (addr, data) => {
-        memory._mem[addr + 0x100] = (data & 255);
+        if (!memory.biosInitialized) {
+            console.log("writing to " + addr);
+            memory._mem[addr] = (data & 255);
+        } else {
+            console.log("writing to " +(addr + 0x100));
+            memory._mem[addr + 0x100] = (data & 255);
+        }
     },
     read16 : (addr) => {
         let ret = memory.read8(addr);
@@ -53,4 +59,5 @@ const memory = {
 document.getElementById("initbutton").onclick = () => {
     memory.initBios();
     console.log(memory._mem);
+    console.log(cpu._registers);
 }
