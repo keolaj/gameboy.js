@@ -1,5 +1,5 @@
 memory = {
-    _mem = new Uint8Array(0x100),
+    _mem = new Uint8Array(0xFFFF),
     biosInitialized: false,
 
     initBios = () => {
