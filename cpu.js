@@ -132,8 +132,5 @@ const cpu = {
 }
 cpu._map = [
     cpu._opImplementation.NOP,
-
+    
 ]
-for (let i = 0; i < 400; i++) {
-    cpu._map[i] = cpu._opImplementation.notImplemented;
-}
