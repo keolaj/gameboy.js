@@ -76,6 +76,13 @@ const cpu = {
             cpu._clock.m = 1;
             cpu._clock.t = 4;
         },
+
+        LDsp_nn : () => {
+            console.log("testing");
+            cpu._registers.sp = memory.read16(cpu._registers.pc);
+            cpu._registers.pc += 2;
+            cpu._registers.m = 3;
+        },
         
         // add value from register to register A
         ADDra_e : () => {
@@ -132,5 +139,6 @@ const cpu = {
 }
 cpu._map = [
     cpu._opImplementation.NOP,
-    
-]
+];
+
+cpu._map[0x31] = cpu._opImplementation.LDsp_nn;

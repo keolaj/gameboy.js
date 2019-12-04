@@ -44,9 +44,7 @@ const memory = {
         return ret;
     },
     write16 : (addr, data) => {
-        let higher = data >> 8;
-        let lower = (data & 255);
-        memory._mem[addr + 0x100] = higher;
-        memory._mem[addr + 0x100 + 1] = lower;
+        memory.write8((addr + memory.biosInitialized ? 0x100 : 0), data & 255)
+        memory.write8((addr + (memory.biosInitialized ? 0x100 : 0) + 1), data >> 8)
     }
 }
