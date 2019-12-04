@@ -5,18 +5,17 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>gameboy js</title>
 
-    <script src="./cpu.js"></script>
-    <script src="./memory.js">s</script>
-
 </head>
 <body>
 
     <canvas id="entry"></canvas>
-    <script>
-        memory.initBios();
-        cpu.dispatcher();
-    </script>
+    <button id="initbutton">init bootrom</button>
+    <button id="runbutton">run</button>
+    <button id="stepbutton">step</button>
+    <button id="resetbutton">stop</button>
 
+    <script src="./cpu.js"></script>
+    <script src="./memory.js">s</script>
     
 </body>
 </html>
