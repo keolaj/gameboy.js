@@ -20,58 +20,58 @@ cpu = {
     },
     _opImplementation: {
         // load from register to register
-        LDrb_b = () => {
+        LDrrb_b = () => {
             cpu._registers.b = cpu._registers.b;
             cpu._clock.m = 1;
             cpu._clock.t = 4;
         },
-        LDrb_c = () => {
+        LDrrb_c = () => {
             cpu._registers.b = cpu._registers.c;
             cpu._clock.m = 1;
             cpu._clock.t = 4;
         },
-        LDrb_d = () => {
+        LDrrb_d = () => {
             cpu._registers.b = cpu._registers.d;
             cpu._clock.m = 1;
             cpu._clock.t = 4;
         },
-        LDrb_e = () => {
+        LDrrb_e = () => {
             cpu._registers.b = cpu._registers.e;
             cpu._clock.m = 1;
             cpu._clock.t = 4;
         },
-        LDrb_h = () => {
+        LDrrb_h = () => {
             cpu._registers.b = cpu._registers.h;
             cpu._clock.m = 1;
             cpu._clock.t = 4;
         },
-        LDrb_l = () => {
+        LDrrb_l = () => {
             cpu._registers.b = cpu._registers.l;
             cpu._clock.m = 1;
             cpu._clock.t = 4;
         },
-        LDrb_a = () => {
+        LDrrb_a = () => {
             cpu._registers.b = cpu._registers.a;
             cpu._clock.m = 1;
             cpu._clock.t = 4;
         },
 
-        LDrc_b = () => {
+        LDrrc_b = () => {
             cpu._registers.c = cpu._registsers.b;
             cpu._clock.m = 1;
             cpu._clock.t = 4;
         },
-        LDrc_c = () => {
+        LDrrc_c = () => {
             //cpu.registers.c = cpu._registers.c;
             cpu._clock.m = 1;
             cpu._clock.t = 4;
         },
-        LDrc_d = () => {
+        LDrrc_d = () => {
             cpu.registers.c = cpu._registers.d;
             cpu._clock.m = 1;
             cpu._clock.t = 4;
         },
-        LDrc_e = () => {
+        LDrrc_e = () => {
             cpu._registers.c = cpu._registers.e;
             cpu._clock.m = 1;
             cpu._clock.t = 4;
