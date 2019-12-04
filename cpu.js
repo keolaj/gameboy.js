@@ -98,6 +98,20 @@ const cpu = {
             }
             cpu._registers.m = 2;
         },
+
+        // jumps
+        JRNZn : () => {
+            let jumpOffset = memory.read8(cpu._registers.pc); // store jump offset
+            if (jumpOffset > 127) {
+                jumpOffset =- ((~jumpOffset + 1) & 255); // sign jump offset byte
+            }
+            cpu._registers.pc++;
+            cpu._registers.m = 2;
+            if ((cpu._registers.f & 0x80) == 0) {
+                cpu._registers.pc += jumpOffset; // set program counter to perform jump 
+                cpu._registers.m++; // imcrement clock because of jump
+            }
+        },
         
         // add value from register to register A
         ADDra_e : () => {
@@ -189,5 +203,8 @@ cpu._map[0xAF] = cpu._opImplementation.XORa;
 cpu._map[0x21] = cpu._opImplementation.LDhl_nn;
 cpu._map[0x32] = cpu._opImplementation.LDhl_aDecHl;
 cpu._map[0xcb] = cpu._helpers.useCBMap;
+cpu._map[0x20] = cpu._opImplementation.jp
 
 cpu._cbmap[0x7c] = cpu._opImplementation.BIT7h;
+
+
