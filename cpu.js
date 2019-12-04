@@ -1,5 +1,5 @@
 const cpu = {
-    cpuInterval: 0,
+    execute: true,
     _clock: {
         m: 0,
         t: 0
@@ -183,7 +183,7 @@ const cpu = {
 
         // not implemented
         notImplemented: () => {
-            console.log("not implemented");
+            //console.log("not implemented");
         }
     },
     _helpers: {
@@ -210,7 +210,7 @@ const cpu = {
             if (cpu._cbmap[op]) {
                 cpu._cbmap[op]();
             } else {
-                console.log("cb instruction not implemented: " + op.toString(16));
+                //console.log("cb instruction not implemented: " + op.toString(16));
             }
         }
     },
@@ -219,22 +219,25 @@ const cpu = {
 
     dispatcher: () => {
         memory.initBios();
-        let execute = 0;
 
-        // while (true) {
+        while (cpu.execute) {
+            let op = memory.read8(cpu._registers.pc++);
+            if (cpu._map[op]) {
+                cpu._map[op]();
+            } else {
+                console.log("unimplemented instruction: 0x" + op.toString(16));
+                console.log(memory._mem);
+            }
+            cpu._registers.pc & 65535;
+            cpu._clock.m += cpu._registers.m;
+        }
+        // cpu.cpuInterval = setInterval(() => {
         //     let op = cpu._map[memory.read8(cpu._registers.pc++)];
-        //     console.log(memory.read8(cpu._registers.pc).toString(16));
+        //     //console.log(memory.read8(cpu._registers.pc).toString(16));
         //     op();
         //     cpu._registers.pc & 65535;
         //     cpu._clock.m += cpu._registers.m;
-        // }
-        cpu.cpuInterval = setInterval(() => {
-            let op = cpu._map[memory.read8(cpu._registers.pc++)];
-            console.log(memory.read8(cpu._registers.pc).toString(16));
-            op();
-            cpu._registers.pc & 65535;
-            cpu._clock.m += cpu._registers.m;
-        }, 10)
+        // }, 10)
     }
 }
 cpu._map = [
@@ -251,18 +254,16 @@ cpu._map[0x20] = cpu._opImplementation.JRNZn;
 cpu._cbmap[0x7c] = cpu._opImplementation.BIT7h;
 
 document.getElementById("stepbutton").onclick = () => {
-    clearInterval(cpu.cpuInterval);
+    cpu.execute = false;
     console.log("executing opcode: 0x" + memory.read8(cpu._registers.pc).toString(16));
     let op = memory.read8(cpu._registers.pc++);
     cpu._map[op]();
-    console.log(memory._mem);
-    console.log(cpu._registers);
     cpu._registers.pc & 65535;
     cpu._clock.m += cpu._registers.m;
 }
 
 document.getElementById("resetbutton").onclick = () => {
-    clearInterval(cpu.cpuInterval);
+    cpu.execute = false;
     cpu._registers = {
         a: 0, // 8 bit registers   
         b: 0,
@@ -279,8 +280,6 @@ document.getElementById("resetbutton").onclick = () => {
         t: 0
     }
     memory._mem = [];
-    console.log(cpu._registers);
-    console.log(memory._mem);
 }
 
 document.getElementById("runbutton").onclick = cpu.dispatcher;
