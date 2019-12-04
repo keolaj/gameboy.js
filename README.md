@@ -1,2 +1,2 @@
 # gameboy.js
-a gameboy emulator in javascript
+a gameboy emulator in js rendered in webgl
