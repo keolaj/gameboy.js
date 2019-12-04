@@ -92,7 +92,7 @@ const cpu = {
         },
 
         LDhl_aDecHl: () => {
-            memory.write8((cpu._registers.h << 8 + cpu._registers.l), cpu._registers.a);
+            memory.write8(((cpu._registers.h << 8) + cpu._registers.l), cpu._registers.a);
             cpu._registers.l = (cpu._registers.l - 1) & 255;
             if (cpu._registers.l == 255) {
                 cpu._registers.h = (cpu._registers.h - 1) & 255;
@@ -253,9 +253,8 @@ cpu._cbmap[0x7c] = cpu._opImplementation.BIT7h;
 document.getElementById("stepbutton").onclick = () => {
     clearInterval(cpu.cpuInterval);
     console.log("executing opcode: 0x" + memory.read8(cpu._registers.pc).toString(16));
-    let op = cpu._map[memory.read8(cpu._registers.pc)];
-    cpu._registers.pc++
-    op();
+    let op = memory.read8(cpu._registers.pc++);
+    cpu._map[op]();
     console.log(memory._mem);
     console.log(cpu._registers);
     cpu._registers.pc & 65535;
@@ -263,6 +262,7 @@ document.getElementById("stepbutton").onclick = () => {
 }
 
 document.getElementById("resetbutton").onclick = () => {
+    clearInterval(cpu.cpuInterval);
     cpu._registers = {
         a: 0, // 8 bit registers   
         b: 0,
