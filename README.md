@@ -1,2 +1,2 @@
-# orig-gba.js
+# gameboy.js
 a gameboy emulator in javascript
