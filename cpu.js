@@ -101,12 +101,13 @@ cpu = {
             //     cpu._registers.f |= 0x20; //check for lower bit carry
             }
             if (register > 15) {
+                // check for half carry
                 cpu._registers.f |= 0x20;
             }
             if (register > 255) {
                 cpu._registers.f |= 0x10 // check for carry
             }
-            cpu._registers.f |= isSubOperation ? 0x40 : 0;
+            cpu._registers.f |= isSubOperation ? 0x40 : 0; // if substitution operation set substitution flag
         }
     },
     _map: [],

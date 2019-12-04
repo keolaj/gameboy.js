@@ -6,6 +6,8 @@ const dispatcher = () => {
     let execute = true;
 
     while (execute) {
-        let op = memory.read16(cpu._registers.pc);
+        cpu.map[memory.read8(cpu._registers.pc++)]();
+        cpu._registers.pc & 65535;
+        cpu._clock.m += cpu._registers.m;
     }
 }
