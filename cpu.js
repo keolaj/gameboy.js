@@ -78,6 +78,49 @@ const cpu = {
             cpu._registers.t = 4;
         },
 
+        LDrn_a : () => {
+            cpu._registers.a = cpu.registers.pc;
+            cpu._registers.pc++;
+            cpu._registers.m = 2;
+            cpu._registers.t = 8;
+        },
+        LDrn_b : () => {
+            cpu._registers.b = cpu.registers.pc;
+            cpu._registers.pc++;
+            cpu._registers.m = 2;
+            cpu._registers.t = 8;
+        },
+        LDrn_c : () => {
+            cpu._registers.c = cpu.registers.pc;
+            cpu._registers.pc++;
+            cpu._registers.m = 2;
+            cpu._registers.t = 8;
+        },
+        LDrn_d : () => {
+            cpu._registers.d = cpu.registers.pc;
+            cpu._registers.pc++;
+            cpu._registers.m = 2;
+            cpu._registers.t = 8;
+        },
+        LDrn_e : () => {
+            cpu._registers.e = cpu.registers.pc;
+            cpu._registers.pc++;
+            cpu._registers.m = 2;
+            cpu._registers.t = 8;
+        },
+        LDrn_h : () => {
+            cpu._registers.h = cpu.registers.pc;
+            cpu._registers.pc++;
+            cpu._registers.m = 2;
+            cpu._registers.t = 8;
+        },
+        LDrn_l : () => {
+            cpu._registers.l = cpu.registers.pc;
+            cpu._registers.pc++;
+            cpu._registers.m = 2;
+            cpu._registers.t = 8;
+        },
+
         // 16 bit load
         LDhl_nn: () => {
             cpu._registers.h = memory.read8(cpu._registers.pc);
@@ -98,6 +141,13 @@ const cpu = {
                 cpu._registers.h = (cpu._registers.h - 1) & 255;
             }
             cpu._registers.m = 2;
+        },
+
+        LDHn_a : () => {
+            memory.write8(cpu._registers.pc + 0xFF00, cpu._registers.a);
+            cpu._registers.pc++;
+            cpu._registers.m = 3;
+            cpu._registers.t = 12;
         },
 
         // jumps
@@ -227,6 +277,7 @@ const cpu = {
             } else {
                 console.log("unimplemented instruction: 0x" + op.toString(16));
                 console.log(memory._mem);
+                cpu.execute = false;
             }
             cpu._registers.pc & 65535;
             cpu._clock.m += cpu._registers.m;
@@ -250,6 +301,7 @@ cpu._map[0x21] = cpu._opImplementation.LDhl_nn;
 cpu._map[0x32] = cpu._opImplementation.LDhl_aDecHl;
 cpu._map[0xcb] = cpu._helpers.useCBMap;
 cpu._map[0x20] = cpu._opImplementation.JRNZn;
+cpu._map[0xE] = cpu._opImplementation.LDHn_a;
 
 cpu._cbmap[0x7c] = cpu._opImplementation.BIT7h;
 
