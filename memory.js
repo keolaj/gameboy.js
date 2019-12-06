@@ -1,9 +1,16 @@
-const memory = {
-    _mem : new Uint8Array(0xFFFF),
-    biosInitialized: false,
+// credit to irman nazar for mmu, didnt feel like writing this. might rewrite my own later
 
-    initBios : () => {
-        memory._mem = [
+memory = {
+    _bios: [],
+    _rom: '',
+    _eram: [],
+    _wram: [],
+    _zram: [],
+
+    _inbios: 1,
+
+    initBios: () => {
+        memory._bios = [
             0x31, 0xFE, 0xFF, 0xAF, 0x21, 0xFF, 0x9F, 0x32, 0xCB, 0x7C, 0x20, 0xFB, 0x21, 0x26, 0xFF, 0x0E,
             0x11, 0x3E, 0x80, 0x32, 0xE2, 0x0C, 0x3E, 0xF3, 0xE2, 0x32, 0x3E, 0x77, 0x77, 0x3E, 0xFC, 0xE0,
             0x47, 0x11, 0x04, 0x01, 0x21, 0x10, 0x80, 0x1A, 0xCD, 0x95, 0x00, 0xCD, 0x96, 0x00, 0x13, 0x7B,
@@ -20,44 +27,186 @@ const memory = {
             0xDD, 0xDC, 0x99, 0x9F, 0xBB, 0xB9, 0x33, 0x3E, 0x3c, 0x42, 0xB9, 0xA5, 0xB9, 0xA5, 0x42, 0x4C,
             0x21, 0x04, 0x01, 0x11, 0xA8, 0x00, 0x1A, 0x13, 0xBE, 0x20, 0xFE, 0x23, 0x7D, 0xFE, 0x34, 0x20,
             0xF5, 0x06, 0x19, 0x78, 0x86, 0x23, 0x05, 0x20, 0xFB, 0x86, 0x20, 0xFE, 0x3E, 0x01, 0xE0, 0x50
-        ];
+        ]
     },
 
-    read8 : (addr) => {
-        if (!memory.biosInitialized) {
-            if (addr < 0x100) {
-                //console.log("reading from " + addr);
-                return memory._mem[addr];
-            } else if (cpu._registers.pc == 0x100) {
-                memory.biosInitialized = true;
-            }
+    reset: function () {
+        for (i = 0; i < 8192; i++) {
+            memory._wram[i] = 0;
+            memory._eram[i] = 0;
         }
-        //console.log("reading from " + (addr + 0x100));
-        return memory._mem[addr + 0x100];
+        for (i = 0; i < 127; i++) {
+            memory._zram[i] = 0;
+        }
+        memory._inbios = 1;
+        memory._ie = 0;
+        memory._if = 0;
     },
-    write8 : (addr, data) => {
-        if (!memory.biosInitialized) {
-            //console.log("writing to " + addr);
-            memory._mem[addr] = (data & 255);
-        } else {
-            //console.log("writing to " +(addr + 0x100));
-            memory._mem[addr + 0x100] = (data & 255);
+
+    load: function (file) {
+        b = new BinFileReader(file);
+        memory._rom = b.readString(b.getFileSize(), 0);
+    },
+
+    read8: function (addr) {
+        switch (addr & 0xF000) {
+            // ROM bank 0
+            case 0x0000:
+                if (memory._inbios) {
+                    if (addr < 0x0100) return memory._bios[addr];
+                    else if (Z80._r.pc == 0x0100) {
+                        memory._inbios = 0;
+                    }
+                } else {
+                    return memory._rom.charCodeAt(addr);
+                }
+
+                case 0x1000:
+                case 0x2000:
+                case 0x3000:
+                    return memory._rom.charCodeAt(addr);
+
+                    // ROM bank 1
+                case 0x4000:
+                case 0x5000:
+                case 0x6000:
+                case 0x7000:
+                    return memory._rom.charCodeAt(addr);
+
+                    // VRAM
+                case 0x8000:
+                case 0x9000:
+                    return //GPU._vram[addr & 0x1FFF];
+
+                    // External RAM
+                case 0xA000:
+                case 0xB000:
+                    return memory._eram[addr & 0x1FFF];
+
+                    // Work RAM and echo
+                case 0xC000:
+                case 0xD000:
+                case 0xE000:
+                    return memory._wram[addr & 0x1FFF];
+
+                    // Everything else
+                case 0xF000:
+                    switch (addr & 0x0F00) {
+                        // Echo RAM
+                        case 0x000:
+                        case 0x100:
+                        case 0x200:
+                        case 0x300:
+                        case 0x400:
+                        case 0x500:
+                        case 0x600:
+                        case 0x700:
+                        case 0x800:
+                        case 0x900:
+                        case 0xA00:
+                        case 0xB00:
+                        case 0xC00:
+                        case 0xD00:
+                            return memory._wram[addr & 0x1FFF];
+
+                            // OAM
+                        case 0xE00:
+                            //return ((addr & 0xFF) < 0xA0) ? GPU._oam[addr & 0xFF] : 0;
+
+                            // Zeropage RAM, I/O
+                        case 0xF00:
+                            if (addr > 0xFF7F) {
+                                return memory._zram[addr & 0x7F];
+                            } else switch (addr & 0xF0) {}
+                    }
         }
     },
-    read16 : (addr) => {
-        let ret = memory.read8(addr);
-        ret << 8;
-        ret = ret + memory.read8(addr + 1);
-        return ret;
+
+    read16: function (addr) {
+        return memory.read8(addr) + (memory.read8(addr + 1) << 8);
     },
-    write16 : (addr, data) => {
-        memory.write8((addr + memory.biosInitialized ? 0x100 : 0), data & 255)
-        memory.write8((addr + (memory.biosInitialized ? 0x100 : 0) + 1), data >> 8)
+
+    write8: function (addr, val) {
+        switch (addr & 0xF000) {
+            // ROM bank 0
+            case 0x0000:
+                if (memory._inbios && addr < 0x0100) return;
+                // fall through
+            case 0x1000:
+            case 0x2000:
+            case 0x3000:
+                break;
+
+                // ROM bank 1
+            case 0x4000:
+            case 0x5000:
+            case 0x6000:
+            case 0x7000:
+                break;
+
+                // VRAM
+            case 0x8000:
+            case 0x9000:
+                //GPU._vram[addr & 0x1FFF] = val;
+                //GPU.updatetile(addr & 0x1FFF, val);
+                break;
+
+                // External RAM
+            case 0xA000:
+            case 0xB000:
+                memory._eram[addr & 0x1FFF] = val;
+                break;
+
+                // Work RAM and echo
+            case 0xC000:
+            case 0xD000:
+            case 0xE000:
+                memory._wram[addr & 0x1FFF] = val;
+                break;
+
+                // Everything else
+            case 0xF000:
+                switch (addr & 0x0F00) {
+                    // Echo RAM
+                    case 0x000:
+                    case 0x100:
+                    case 0x200:
+                    case 0x300:
+                    case 0x400:
+                    case 0x500:
+                    case 0x600:
+                    case 0x700:
+                    case 0x800:
+                    case 0x900:
+                    case 0xA00:
+                    case 0xB00:
+                    case 0xC00:
+                    case 0xD00:
+                        memory._wram[addr & 0x1FFF] = val;
+                        break;
+
+                        // OAM
+                    case 0xE00:
+                        //if ((addr & 0xFF) < 0xA0) GPU._oam[addr & 0xFF] = val;
+                        //GPU.updateoam(addr, val);
+                        //break;
+
+                        // Zeropage RAM, I/O
+                    case 0xF00:
+                        if (addr > 0xFF7F) {
+                            memory._zram[addr & 0x7F] = val;
+                        } else switch (addr & 0xF0) {}
+                }
+                break;
+        }
+    },
+
+    write16: function (addr, val) {
+        memory.write8(addr, val & 255);
+        memory.write8(addr + 1, val >> 8);
     }
-}
+};
 
 document.getElementById("initbutton").onclick = () => {
     memory.initBios();
-    //console.log(memory._mem);
-    //console.log(cpu._registers)
 }
