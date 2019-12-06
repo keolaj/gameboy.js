@@ -71,7 +71,7 @@ const cpu = {
             cpu._registers.t = 4;
         },
         LDrrc_b: () => {
-            cpu._registers.c = cpu._registsers.b;
+            cpu._registers.c = cpu._registers.b;
             cpu._registers.m = 1;
             cpu._registers.t = 4;
         },
@@ -185,12 +185,37 @@ const cpu = {
             }
             cpu._registers.m = 2;
         },
-
+        LDhl_aIncHl: () => {
+            memory.write8((cpu._registers.h << 8) + cpu._registers.l, cpu._registers.a);
+            if (cpu._registers.l == 255) {
+                cpu._registers.h++;
+                cpu._registers.l = 0;
+                
+            } else {
+                cpu._registers.l++;
+            }
+            cpu._registers.h &= 255;
+            cpu._registers.l &= 255;
+            cpu._registers.m = 2;
+        },
 
         LDHcandff00_a : () => {
             memory.write8(cpu._registers.c + 0xFF00, cpu._registers.a);
             cpu._registers.m = 2;
             cpu._registers.t = 8;
+        },
+
+        INChl: () => {
+            if (cpu._registers.l == 255) {
+                cpu._registers.l = 0;
+                cpu._registers.h++;
+            } else {
+                cpu._registers.l++;
+            }
+            cpu._registers.h &= 255;
+            cpu._registers.l &= 255;
+            cpu._registers.m = 1;
+            cpu._registers.t = 4;
         },
 
         // jumps
@@ -315,6 +340,13 @@ const cpu = {
         },
 
         // Returns
+        RET: () => {
+            cpu._registers.pc = memory.read16(cpu._registers.sp);
+            cpu._registers.sp += 2;
+            cpu._registers.m = 3;
+            cpu._registers.t = 12;
+        },
+
         RETNZ: () => {
             cpu._registers.m = 1;
             cpu._registers.t = 4;
@@ -399,7 +431,7 @@ const cpu = {
                 cpu._map[op]();
             } else {
                 console.log("unimplemented instruction: 0x" + op.toString(16));
-                console.log(memory._mem);
+                console.log(memory._bios);
                 console.log(cpu._registers);
                 cpu.execute = false;
             }
@@ -409,6 +441,7 @@ const cpu = {
                 console.log("weird register from instruction: 0x" + op.toString(16));
                 cpu.execute = false;
             }
+            gpu.step();
         }
         // cpu.cpuInterval = setInterval(() => {
         //     let op = memory.read8(cpu._registers.pc++);
@@ -453,6 +486,9 @@ cpu._map[0xC5] = cpu._opImplementation.PUSHbc;
 cpu._map[0x17] = cpu._opImplementation.RLr_a;
 cpu._map[0xC1] = cpu._opImplementation.POPbc;
 cpu._map[0x5] = cpu._opImplementation.DECr_b;
+cpu._map[0x22] = cpu._opImplementation.LDhl_aIncHl;
+cpu._map[0x23] = cpu._opImplementation.INChl;
+cpu._map[0xC9] = cpu._opImplementation.RET;
 
 
 cpu._cbmap[0x7c] = cpu._opImplementation.BIT7h;

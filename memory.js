@@ -76,7 +76,7 @@ memory = {
                     // VRAM
                 case 0x8000:
                 case 0x9000:
-                    return //GPU._vram[addr & 0x1FFF];
+                    return //gpu._vram[addr & 0x1FFF];
 
                     // External RAM
                 case 0xA000:
@@ -111,7 +111,7 @@ memory = {
 
                             // OAM
                         case 0xE00:
-                            //return ((addr & 0xFF) < 0xA0) ? GPU._oam[addr & 0xFF] : 0;
+                            //return ((addr & 0xFF) < 0xA0) ? gpu._oam[addr & 0xFF] : 0;
 
                             // Zeropage RAM, I/O
                         case 0xF00:
@@ -147,8 +147,8 @@ memory = {
                 // VRAM
             case 0x8000:
             case 0x9000:
-                //GPU._vram[addr & 0x1FFF] = val;
-                //GPU.updatetile(addr & 0x1FFF, val);
+                gpu._vram[addr & 0x1FFF] = val;
+                //gpu.updatetile(addr & 0x1FFF, val);
                 break;
 
                 // External RAM
@@ -187,8 +187,8 @@ memory = {
 
                         // OAM
                     case 0xE00:
-                        //if ((addr & 0xFF) < 0xA0) GPU._oam[addr & 0xFF] = val;
-                        //GPU.updateoam(addr, val);
+                        //if ((addr & 0xFF) < 0xA0) gpu._oam[addr & 0xFF] = val;
+                        //gpu.updateoam(addr, val);
                         //break;
 
                         // Zeropage RAM, I/O
