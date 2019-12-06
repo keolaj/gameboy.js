@@ -10,7 +10,15 @@ gpu = {
         if (canvas && canvas.getContext) {
             gpu._canvasContext = canvas.getContext('2d');
             if (gpu._canvasContext.createImageData) {
-                gpu._screen = gpu._canvasContext.createImageData(160, 144);
+                imageData = gpu._canvasContext.createImageData(160, 144);
+                for (let i = 0; i < imageData.data.length; i += 4) {
+                    // Modify pixel data
+                    imageData.data[i + 0] = 0;  // R value
+                    imageData.data[i + 1] = 0;    // G value
+                    imageData.data[i + 2] = 0;  // B value
+                    imageData.data[i + 3] = 255;  // A value
+                }
+                gpu._screen = imageData;
             } else if (gpu._canvasContext.getImageData) {
                 gpu._screen = gpu._canvasContext.getImageData(0, 0, 160, 144);
             } else {
@@ -22,8 +30,8 @@ gpu = {
                 for (var i = 0; i < 160 * 144 * 4; i++) {
                     gpu._screen.data[i] = 0;
                 }
-                gpu._canvasContext.putImageData(gpu._screen, 0, 0);
             }
+            gpu._canvasContext.putImageData(gpu._screen, 0, 0);
         }
     },
     step: () => {
