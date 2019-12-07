@@ -54,7 +54,7 @@ memory = {
             case 0x0000:
                 if (memory._inbios) {
                     if (addr < 0x0100) return memory._bios[addr];
-                    else if (Z80._r.pc == 0x0100) {
+                    else if (cpu._registers.pc == 0x0100) {
                         memory._inbios = 0;
                     }
                 } else {

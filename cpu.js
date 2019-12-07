@@ -90,6 +90,12 @@ const cpu = {
             cpu._registers.m = 1;
             cpu._registers.t = 4;
         },
+        LDrra_e: () => {
+            cpu._registers.a = cpu._registers.e;
+            cpu._registers.m = 1;
+            cpu._registers.t = 4;
+        },
+
         LDMEMa_de: () => {
             cpu._registers.a = memory.read8(get16(cpu._registers.d, cpu._registers.e));
             cpu._registers.m = 2;
@@ -176,6 +182,11 @@ const cpu = {
             cpu._registers.m = 2;
             cpu._registers.t = 8;
         },
+        LDnn_a: () => {
+            memory.write8((cpu._registers.pc << 8) + cpu._registers.pc + 1, cpu._registers.a);
+            cpu._registers.m = 4;
+            cpu._registers.t = 16;
+        },
 
         LDhl_aDecHl: () => {
             memory.write8(((cpu._registers.h << 8) + cpu._registers.l), cpu._registers.a);
@@ -204,7 +215,18 @@ const cpu = {
             cpu._registers.m = 2;
             cpu._registers.t = 8;
         },
-
+        INCde: () => {
+            if (cpu._registers.e == 255) {
+                cpu._registers.e = 0;
+                cpu._registers.d++;
+            } else {
+                cpu._registers.e++;
+            }
+            cpu._registers.d &= 255;
+            cpu._registers.e &= 255;
+            cpu._registers.m = 1;
+            cpu._registers.t = 4;
+        },
         INChl: () => {
             if (cpu._registers.l == 255) {
                 cpu._registers.l = 0;
@@ -380,6 +402,14 @@ const cpu = {
             cpu._registers.t = 8;
         },
 
+        CPn: () => {
+            let i = cpu._registers.a - memory.read8(cpu._registers.pc);
+            cpu._registers.pc++;
+            cpu._helpers.setFlags(i);
+            cpu._registers.m = 2;
+            cpu._registers.t = 8;
+        },
+
         // no operation
         NOP: () => {
             cpu._registers.m = 1;
@@ -489,6 +519,10 @@ cpu._map[0x5] = cpu._opImplementation.DECr_b;
 cpu._map[0x22] = cpu._opImplementation.LDhl_aIncHl;
 cpu._map[0x23] = cpu._opImplementation.INChl;
 cpu._map[0xC9] = cpu._opImplementation.RET;
+cpu._map[0x13] = cpu._opImplementation.INCde;
+cpu._map[0x7B] = cpu._opImplementation.LDrra_e;
+cpu._map[0xFE] = cpu._opImplementation.CPn;
+cpu._map[0xEA] = cpu._opImplementation.LDnn_a;
 
 
 cpu._cbmap[0x7c] = cpu._opImplementation.BIT7h;
