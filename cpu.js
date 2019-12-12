@@ -620,7 +620,7 @@ const cpu = {
                 console.log("weird register from instruction: 0x" + op.toString(16));
                 cpu.execute = false;
             }
-            if (cpu._registers.pc == 0x3e) { // breakpoint
+            if (cpu._registers.pc == 0x40) { // breakpoint
                 cpu.execute = false;
                 console.log("register af: 0x" + ((cpu._registers.a << 8) + cpu._registers.f).toString(16));
                 console.log("register bc: 0x" + ((cpu._registers.b << 8) + cpu._registers.c).toString(16));
