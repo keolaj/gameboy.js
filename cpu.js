@@ -218,6 +218,7 @@ const cpu = {
         },
         LDnn_a: () => {
             memory.write8((cpu._registers.pc << 8) + cpu._registers.pc + 1, cpu._registers.a);
+            cpu._registers.pc += 2;
             cpu._registers.m = 4;
             cpu._registers.t = 16;
         },
@@ -388,7 +389,7 @@ const cpu = {
 
         DECr_a: () => {
             cpu._registers.a--;
-            cpu._helpers.setFlags(cpu._registers.a);
+            cpu._helpers.setFlags(cpu._registers.a, true);
             cpu._registers.a &= 255;
             cpu._registers.m = 1;
             cpu._registers.t = 4;
@@ -402,21 +403,21 @@ const cpu = {
         },
         DECr_c: () => {
             cpu._registers.c--;
-            cpu._helpers.setFlags(cpu._registers.c);
+            cpu._helpers.setFlags(cpu._registers.c, true);
             cpu._registers.c &= 255;
             cpu._registers.m = 1;
             cpu._registers.t = 4;
         },
         DECr_d: () => {
             cpu._registers.d--;
-            cpu._helpers.setFlags(cpu._registers.d);
+            cpu._helpers.setFlags(cpu._registers.d, true);
             cpu._registers.d &= 255;
             cpu._registers.m = 1;
             cpu._registers.t = 4;
         },
         DECr_e: () => {
             cpu._registers.e--;
-            cpu._helpers.setFlags(cpu._registers.e);
+            cpu._helpers.setFlags(cpu._registers.e, true);
             cpu._registers.e &= 255;
             cpu._registers.m = 1;
             cpu._registers.t = 4;
@@ -620,7 +621,7 @@ const cpu = {
                 console.log("weird register from instruction: 0x" + op.toString(16));
                 cpu.execute = false;
             }
-            if (cpu._registers.pc == 0x40) { // breakpoint
+            if (cpu._registers.pc == 0x51) { // breakpoint
                 cpu.execute = false;
                 console.log("register af: 0x" + ((cpu._registers.a << 8) + cpu._registers.f).toString(16));
                 console.log("register bc: 0x" + ((cpu._registers.b << 8) + cpu._registers.c).toString(16));
