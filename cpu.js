@@ -321,7 +321,7 @@ const cpu = {
             cpu._registers.sp -= 2;
             memory.write16(cpu._registers.sp, cpu._registers.pc + 2);
             cpu._registers.pc = memory.read16(cpu._registers.pc);
-            cpu._registers.m = 5;
+            cpu._registers.m = 6;
             cpu._registers.t = 24;
         },
         CALLNZnn: () => {
@@ -330,7 +330,7 @@ const cpu = {
             if (cpu._registers.f & 0x80 == 0) {
                 cpu._registers.sp -= 2;
                 memory.write16(cpu._registers.sp, cpu._registers.pc + 2);
-                cpu._registers.m = 5;
+                cpu._registers.m = 6;
                 cpu._registers.t = 20;
             }
         },
@@ -620,7 +620,7 @@ const cpu = {
                 console.log("weird register from instruction: 0x" + op.toString(16));
                 cpu.execute = false;
             }
-            if (cpu._registers.pc == 0x34) { // breakpoint
+            if (cpu._registers.pc == 0x3e) { // breakpoint
                 cpu.execute = false;
                 console.log("register af: 0x" + ((cpu._registers.a << 8) + cpu._registers.f).toString(16));
                 console.log("register bc: 0x" + ((cpu._registers.b << 8) + cpu._registers.c).toString(16));

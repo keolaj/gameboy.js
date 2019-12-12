@@ -127,6 +127,10 @@ gpu = {
 
         // Read tile index from the background map
         var colour;
+        if (gpu._vram[mapoffs + lineoffs] == undefined) {
+            return;
+        }
+        
         var tile = gpu._vram[mapoffs + lineoffs];
 
         // If the tile data set in use is #1, the
@@ -134,6 +138,9 @@ gpu = {
         if (gpu._bgtile == 1 && tile < 128) tile += 256;
 
         for (var i = 0; i < 160; i++) {
+            if (gpu._pal[gpu._tileset[tile][y][x]] == undefined) {
+                return;
+            }
             // Re-map the tile pixel through the palette
             colour = gpu._pal[gpu._tileset[tile][y][x]];
 
@@ -173,7 +180,7 @@ gpu = {
         }
     },
     write8: (addr, val) => {
-        console.log("gpu.write8");
+        console.log("gpu.write8 at 0x" + addr.toString(16));
         switch(addr) {
             case 0xFF00:
             gpu._switchbg = (val & 0x01) ? 1 : 0;
