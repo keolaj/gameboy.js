@@ -21,6 +21,7 @@ const cpu = {
         e: 0,
         h: 0,
         l: 0,
+        f: 0,
 
         pc: 0, // 16 bit registers
         sp: 0,
@@ -177,14 +178,14 @@ const cpu = {
         },
 
         LDHa_n: () => {
-            cpu._registers.a = memory.read8(cpu._registers.pc + 0xFF00);
+            cpu._registers.a = memory.read8(memory.read8(cpu._registers.pc) + 0xFF00);
             cpu._registers.pc++;
             cpu._registers.m = 3;
             cpu._registers.t = 12;
         },
 
         LDHn_a: () => {
-            memory.write8(0xFF00 + memory.read8(cpu._registers.pc), cpu._registers.a);
+            memory.write8((0xFF00 + memory.read8(cpu._registers.pc)), cpu._registers.a);
             cpu._registers.pc++;
             cpu._registers.m = 3;
             cpu._registers.t = 12;
@@ -212,12 +213,12 @@ const cpu = {
             cpu._registers.t = 12;
         },
         LDMEMhl_a: () => {
-            memory.write8((cpu._registers.h << 8) + cpu._registers.l, cpu._registers.a);
+            memory.write8(((cpu._registers.h << 8) + cpu._registers.l), cpu._registers.a);
             cpu._registers.m = 2;
             cpu._registers.t = 8;
         },
         LDnn_a: () => {
-            memory.write8((cpu._registers.pc << 8) + cpu._registers.pc + 1, cpu._registers.a);
+            memory.write8(memory.read16(cpu._registers.pc), cpu._registers.a);
             cpu._registers.pc += 2;
             cpu._registers.m = 4;
             cpu._registers.t = 16;
@@ -365,8 +366,11 @@ const cpu = {
         },
         ADDmema_hl: () => {
             cpu._registers.a += memory.read8((cpu._registers.h << 8) + cpu._registers.l);
-            cpu._helpers.setFlags(cpu._registers.a);
+            cpu._registers.f = (cpu._registers.a > 255) ? 0x10 : 0;
             cpu._registers.a &= 255;
+            if (!cpu._registers.a) {
+                cpu._registers.f |= 0x80;
+            }
             cpu._registers.m = 2;
             cpu._registers.t = 8;
         },
@@ -551,6 +555,7 @@ const cpu = {
             i -= memory.read8(cpu._registers.pc);
             cpu._registers.pc++;
             cpu._helpers.setFlags(i, true);
+            cpu._registers.f |= 0x10;
             cpu._registers.m = 2;
             cpu._registers.t = 8;
         },
@@ -576,11 +581,17 @@ const cpu = {
     _helpers: {
         setFlags: (register, isSubOperation) => {
             cpu._registers.f = 0;
-            if (register == 0) { // check for if zero
+            if (register == 0 || register & 255 == 0) { // check for if zero
                 cpu._registers.f |= 0x80;
             }
-            if (register > 255 || register < 0) {
-                cpu._registers.f |= 0x10 // check for carry
+            if (register > 15) {
+                cpu._registers.f |= 0x20;
+            }
+            if (register > 255) {
+                cpu._registers.f |= 0x10; // check for carry
+            }
+            if (register < 0) {
+                cpu._registers.f |= 0x10;
             }
             cpu._registers.f |= isSubOperation ? 0x40 : 0; // if substitution operation set substitution flag
         },
@@ -601,37 +612,38 @@ const cpu = {
     _map: [],
     _cbmap: [],
 
+    frame: () => {
+        var fclock = cpu._clock.m + 17556;
+        do {
+                let op = memory.read8(cpu._registers.pc++);
+                if (cpu._map[op]) {
+                    //console.log("memory location: 0x" + (cpu._registers.pc - 1).toString(16) + " instruction: 0x" + memory.read8(cpu._registers.pc - 1).toString(16));
+                    cpu._map[op]();
+                } else {
+                    console.log("unimplemented instruction: 0x" + op.toString(16) + " at: 0x" + (cpu._registers.pc - 1).toString(16));
+                    console.log(memory._bios);
+                    console.log(cpu._registers);
+                    cpu.execute = false;
+                }
+                //console.log("ticks: " + cpu._registers.m);
+                cpu._registers.pc & 65535;
+                cpu._clock.m += cpu._registers.m;
+                gpu.step();
+                if (cpu._registers.b < 0) {
+                    console.log("weird register from instruction: 0x" + op.toString(16));
+                    cpu.execute = false;
+                }
+                
+        } while (cpu.execute && cpu._clock.m < fclock);
+
+    },
     dispatcher: () => {
-        while (cpu.execute) {
-            let op = memory.read8(cpu._registers.pc++);
-            if (cpu._map[op]) {
-                //console.log("memory location: 0x" + (cpu._registers.pc - 1).toString(16) + " instruction: 0x" + memory.read8(cpu._registers.pc - 1).toString(16));
-                cpu._map[op]();
-            } else {
-                console.log("unimplemented instruction: 0x" + op.toString(16) + " at: 0x" + (cpu._registers.pc - 1).toString(16));
-                console.log(memory._bios);
-                console.log(cpu._registers);
-                cpu.execute = false;
+        cpu.cpuInterval = setInterval(() => {
+            cpu.frame();
+            if (cpu.execute === false) {
+                clearInterval(cpu.cpuInterval);
             }
-            //console.log("ticks: " + cpu._registers.m);
-            cpu._registers.pc & 65535;
-            cpu._clock.m += cpu._registers.m;
-            gpu.step();
-            if (cpu._registers.b < 0) {
-                console.log("weird register from instruction: 0x" + op.toString(16));
-                cpu.execute = false;
-            }
-            if (cpu._registers.pc == 0x51) { // breakpoint
-                cpu.execute = false;
-                console.log("register af: 0x" + ((cpu._registers.a << 8) + cpu._registers.f).toString(16));
-                console.log("register bc: 0x" + ((cpu._registers.b << 8) + cpu._registers.c).toString(16));
-                console.log("register de: 0x" + ((cpu._registers.d << 8) + cpu._registers.e).toString(16));
-                console.log("register hl: 0x" + ((cpu._registers.h << 8) + cpu._registers.l).toString(16));
-                console.log("register sp: 0x" + (cpu._registers.sp).toString(16));
-                console.log("register pc: 0x" + (cpu._registers.pc).toString(16));
-                console.log("previous instruction ticks: " + cpu._registers.m);
-            }
-        }
+        }, 1);
     }
 }
 cpu._map = [
