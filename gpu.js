@@ -98,9 +98,6 @@ gpu = {
         }
     },
     updateTile: (addr, val) => {
-        if (val) {
-            console.log("addr: " + addr.toString(16) + " val: " + val.toString(16));
-        }
         addr &= 0x1FFE;
         let tile = (addr >> 4) & 511;
         let y = (addr >> 1) & 7;

@@ -317,6 +317,11 @@ const cpu = {
             cpu._registers.m++
             cpu._registers.t += 4;
         },
+        JPn: () => {
+            let jump = memory.read16(cpu._registers.pc);
+            cpu._registers.pc = jump;
+            cpu._registers.m++;
+        },
 
         // calls
         CALLnn: () => {
@@ -706,6 +711,7 @@ cpu._map[0x7D] = cpu._opImplementation.LDrra_l;
 cpu._map[0x78] = cpu._opImplementation.LDrra_b;
 cpu._map[0x86] = cpu._opImplementation.ADDmema_hl;
 cpu._map[0x2E] = cpu._opImplementation.LDrn_l;
+cpu._map[0xC3] = cpu._opImplementation.JPn;
 
 cpu._cbmap[0x7c] = cpu._opImplementation.BIT7h;
 cpu._cbmap[0x11] = cpu._opImplementation.RLr_c;
